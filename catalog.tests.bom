@@ -35,7 +35,7 @@ brooklyn.catalog:
       name: MongoDB Server tests
       targetId: mongodb
       brooklyn.config:
-        timeout: 15m
+        timeout: 1h
       brooklyn.children:
 
       # Base tests
