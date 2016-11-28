@@ -22,7 +22,7 @@ brooklyn.catalog:
   name: MongoDB Server
   description: MongoDB (from 'humongous') is a scalable, high-performance, open source NoSQL database
   itemType: template
-  iconUrl: http://s3.amazonaws.com/info-mongodb-com/_com_assets/media/mongodb-logo-rgb.jpeg
+  iconUrl: https://twitter.com/MongoDB/profile_image?size=original
   license: Apache-2.0
   publish:
     license_code: Apache-2.0
