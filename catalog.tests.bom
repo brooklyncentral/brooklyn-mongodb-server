@@ -17,88 +17,46 @@
 # under the License.
 #
 brooklyn.catalog:
-  id: brooklyn-mongodb-server-tests
-  version: 0.1
-  itemType: template
-  iconUrl: http://s3.amazonaws.com/info-mongodb-com/_com_assets/media/mongodb-logo-rgb.jpeg
-  name: MongoDB Server tests
-  description: Test that MongoDB Server is running correctly
-  license_code: Apache-2.0
-  license_url: http://www.apache.org/licenses/LICENSE-2.0.txt
-  item:
-    services:
-    - type: brooklyn-mongodb-server
-      id: mongodb
-      name: MongoDB Server
+  items:
+  - https://raw.githubusercontent.com/brooklyncentral/common-catalog-utils/master/common-tests/src/main/resources/commontests/common.tests.bom
+  - id: brooklyn-mongodb-server-tests
+    version: 0.1
+    itemType: template
+    iconUrl: http://s3.amazonaws.com/info-mongodb-com/_com_assets/media/mongodb-logo-rgb.jpeg
+    name: MongoDB Server tests
+    description: Test that MongoDB Server is running correctly
+    license_code: Apache-2.0
+    license_url: http://www.apache.org/licenses/LICENSE-2.0.txt
+    item:
+      services:
+      - type: brooklyn-mongodb-server
+        id: mongodb
+        name: MongoDB Server
 
-    - type: org.apache.brooklyn.test.framework.TestCase
-      name: MongoDB Server tests
-      targetId: mongodb
-      brooklyn.config:
-        timeout: 1h
-      brooklyn.children:
+      - type: test-case
+        name: MongoDB Server tests
+        targetId: mongodb
+        brooklyn.config:
+          timeout: 1h
 
-      # Base tests
-      - type: org.apache.brooklyn.test.framework.TestCase
-        name: Base Tests
         brooklyn.children:
-        - type: org.apache.brooklyn.test.framework.TestSensor
-          name: Check MongoDB Server is up
-          sensor: service.isUp
-          assert:
-          - equals: true
 
-      # Effector: restart Tests
-      - type: org.apache.brooklyn.test.framework.TestCase
-        name: "Effector: restart Tests"
-        brooklyn.children:
-        - type: org.apache.brooklyn.test.framework.TestEffector
-          name: Invoke restart Effector
-          effector: restart
-          params:
-            restartMachine: false
-        - type: org.apache.brooklyn.test.framework.TestSensor
-          name: Check MongoDB Server is up after restart
-          sensor: service.isUp
-          assert:
-          - equals: true
-        - type: org.apache.brooklyn.test.framework.SimpleShellCommandTest
-          name: Check MongoDB process has restarted
-          command: ps -ef | grep [m]ongodb | grep -v 'dhclient'
-          assertStatus:
-            equals: 0
+        # Base tests
+        - type: test-case
+          name: Base Tests
+          brooklyn.children:
+          - type: assert-up
+            name: Check MongoDB Server is up
 
-      # Effector: stop + restart Tests
-      - type: org.apache.brooklyn.test.framework.TestCase
-        name: "Effector: stop + restart Tests"
-        brooklyn.children:
-        - type: org.apache.brooklyn.test.framework.TestEffector
-          name: Invoke stop Effector
-          effector: stop
-          params:
-            stopMachineMode: NEVER
-        - type: org.apache.brooklyn.test.framework.TestSensor
-          name: Check MongoDB Server is not up after stop
-          sensor: service.isUp
-          assert:
-          - equals: false
-        - type: org.apache.brooklyn.test.framework.SimpleShellCommandTest
-          name: Check MongoDB process has stopped
-          command: ps -ef | grep [m]ongodb | grep -v 'dhclient'
-          assertStatus:
-            equals: 1
-        - type: org.apache.brooklyn.test.framework.TestEffector
-          name: Invoke restart Effector
-          effector: restart
-          params:
-            restartMachine: false
-        - type: org.apache.brooklyn.test.framework.TestSensor
-          name: Check MongoDB Server is up after restart
-          sensor: service.isUp
-          assert:
-          - equals: true
-        - type: org.apache.brooklyn.test.framework.SimpleShellCommandTest
-          name: Check MongoDB process has restarted
-          command: ps -ef | grep [m]ongodb | grep -v 'dhclient'
-          assertStatus:
-            equals: 0
+        - type: test-case
+          brooklyn.children:
+          # Effector: restart Tests
+          - type: assert-restart-process
+            name: Invoke restart Effector
+            brooklyn.config:
+              process.grep.name: "[Mm]ongodb"
+
+          # Effector: stop + restart Tests
+          - type: assert-stop-and-restart-process
+            brooklyn.config:
+              process.grep.name: "[Mm]ongodb"
